@@ -1,0 +1,112 @@
+---
+banner: project/snowshoe_hare.jpg
+title: "Mean Weight of Snowshore Hare"
+author: "Alex Brown"
+date: "2/6/2020"
+output: html_document
+---
+
+<script src="Assignment_1_Task_1_files/kePrint/kePrint.js"></script>
+
+
+<p>This project calculates the mean weight (g) of a sample of Showshoe Hares in the Bonanza Creek Experimental Forest. The sample data collected from 1999-2012 reveals information on species health in the region. Mean weight and sample size of male and female Showshoe Hares for the sample are illustrated below:</p>
+<pre class="r"><code>#read in the showshoe hare sample csv
+showshoe &lt;- read_csv(&quot;showshoe_lter.csv&quot;)</code></pre>
+<p>Source: <a href="https://portal.lternet.edu/nis/metadataviewer?packageid=knb-lter-bnz.55.22" class="uri">https://portal.lternet.edu/nis/metadataviewer?packageid=knb-lter-bnz.55.22</a></p>
+<pre class="r"><code>#exploring the data set
+summary(showshoe)
+View(showshoe)
+names(showshoe)
+head(showshoe)
+tail(showshoe)</code></pre>
+<pre class="r"><code>#wrangling data into tidy format
+unique(showshoe$sex)</code></pre>
+<pre><code>##  [1] NA   &quot;M&quot;  &quot;F&quot;  &quot;?&quot;  &quot;F?&quot; &quot;M?&quot; &quot;pf&quot; &quot;m&quot;  &quot;f&quot;  &quot;f?&quot; &quot;m?&quot;</code></pre>
+<pre class="r"><code>showshoe_tidy &lt;- showshoe %&gt;% 
+  filter(!is.na(sex)) %&gt;% 
+  mutate(sex = str_to_upper(sex)) %&gt;% 
+  filter(sex %in% c(&quot;M&quot;, &quot;F&quot;))  %&gt;%
+  filter(!is.na(weight))
+unique(showshoe_tidy$sex)</code></pre>
+<pre><code>## [1] &quot;M&quot; &quot;F&quot;</code></pre>
+<div id="picture-of-snowshoe-hare" class="section level3">
+<h3>Picture of Snowshoe Hare</h3>
+<div class="figure">
+<img src="snowshoe_hare.jpg" />
+
+</div>
+<p>(Photo by Jim Cumming)</p>
+<pre class="r"><code>#Plot body weight by sex for Showshoe Hare
+showshoe_boxplot &lt;- ggplot(showshoe_tidy, aes(x = sex, y = weight)) +
+  geom_jitter(width = 0.1, alpha = 0.3, aes(color = sex)) +
+  theme_classic() +
+  labs (x = &quot;Sex&quot;, y = &quot;Body weight (g)&quot;, color = &quot;Sex&quot;, title = &quot;Showshoe Hare Body Mass by Sex&quot;, subtitle = &quot;Figure 1: Jitter plot&quot;)
+
+showshoe_boxplot </code></pre>
+<p><img src="Assignment_1_Task_1_files/figure-html/plot data-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#calculate summary statistics for summary table
+showshoe_summary &lt;- showshoe_tidy %&gt;% 
+  group_by(sex) %&gt;% 
+  summarize(
+    mean = round(mean(weight), 2),
+    sd = round(sd(weight), 2),
+    n = length(sex)
+  )</code></pre>
+<pre class="r"><code>#create summary table for Showshoe Hare that shows mean weight, standard deviation, and sample size by sex.
+showshoe_table &lt;- kable(showshoe_summary, caption = &quot;Summary Table of Showshoe Hares. Mean Weight, Standard Deviation, and Sample Size by Sex of Showshoe Hares&quot;, 
+                     col.names = c(&quot;Sex&quot;,&quot;Mean Weight (g)&quot;,&quot;Standard Deviation (g)&quot;,&quot;Sample Size&quot;)) %&gt;% 
+  kable_styling(full_width = F, position = &quot;center&quot;)
+
+showshoe_table</code></pre>
+<table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+(#tab:finalize table)Summary Table of Showshoe Hares. Mean Weight, Standard Deviation, and Sample Size by Sex of Showshoe Hares
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Sex
+</th>
+<th style="text-align:right;">
+Mean Weight (g)
+</th>
+<th style="text-align:right;">
+Standard Deviation (g)
+</th>
+<th style="text-align:right;">
+Sample Size
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+F
+</td>
+<td style="text-align:right;">
+1365.16
+</td>
+<td style="text-align:right;">
+347.45
+</td>
+<td style="text-align:right;">
+1511
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+M
+</td>
+<td style="text-align:right;">
+1349.94
+</td>
+<td style="text-align:right;">
+305.73
+</td>
+<td style="text-align:right;">
+1117
+</td>
+</tr>
+</tbody>
+</table>
+</div>

@@ -1,0 +1,73 @@
+---
+title: "Principle Components Analysis: Nutrients in Breakfast Cereals"
+author: "Alex Brown"
+date: "2/6/2020"
+output: html_document
+---
+
+
+
+<p>The following report will examine the amount of nutrients in breakfast cereals usung a principal components analysis (PCA). Using a PCA allows for us to analyze the relationship and effect the 23 different nutrients have in breakfast cereals. The data is provided by the <a href="https://fdc.nal.usda.gov/index.html">USDA National Nutrient Database</a>.</p>
+<pre class="r"><code>#load packages
+library(tidyverse)
+library(janitor)
+library(VIM)
+library(skimr)
+library(naniar)
+library(ggfortify)</code></pre>
+<pre class="r"><code>#Load in the data
+food &lt;- read_csv(&quot;usda_nutrients.csv&quot;)</code></pre>
+<pre class="r"><code>food_subset &lt;- food %&gt;% 
+  clean_names() %&gt;%
+  mutate(food_group = str_to_lower(food_group)) %&gt;%
+  filter(food_group == &quot;breakfast cereals&quot;) %&gt;% # look at breakfast cereals
+  select(energy_kcal:zinc_mg) #choose nutrients to keep</code></pre>
+<pre class="r"><code>#PCA
+food_pca &lt;- prcomp(food_subset, scale=TRUE)
+
+#Look for missingness
+naniar::gg_miss_var(food_subset) </code></pre>
+<p><img src="Assignment_1_Task_2_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<pre class="r"><code>summary(food_pca)</code></pre>
+<pre><code>## Importance of components:
+##                          PC1    PC2     PC3     PC4     PC5     PC6     PC7
+## Standard deviation     2.721 2.0320 1.48235 1.22419 1.07618 0.97797 0.91955
+## Proportion of Variance 0.322 0.1795 0.09554 0.06516 0.05036 0.04158 0.03676
+## Cumulative Proportion  0.322 0.5015 0.59706 0.66222 0.71258 0.75416 0.79092
+##                            PC8     PC9    PC10    PC11    PC12    PC13    PC14
+## Standard deviation     0.91297 0.82015 0.75135 0.72210 0.60578 0.57428 0.54744
+## Proportion of Variance 0.03624 0.02925 0.02454 0.02267 0.01596 0.01434 0.01303
+## Cumulative Proportion  0.82716 0.85641 0.88095 0.90362 0.91958 0.93392 0.94695
+##                           PC15    PC16    PC17    PC18    PC19    PC20    PC21
+## Standard deviation     0.53418 0.50469 0.46037 0.44490 0.30195 0.28127 0.25733
+## Proportion of Variance 0.01241 0.01107 0.00921 0.00861 0.00396 0.00344 0.00288
+## Cumulative Proportion  0.95936 0.97043 0.97965 0.98825 0.99222 0.99565 0.99853
+##                           PC22    PC23
+## Standard deviation     0.16761 0.07502
+## Proportion of Variance 0.00122 0.00024
+## Cumulative Proportion  0.99976 1.00000</code></pre>
+<pre class="r"><code>#Rotation 
+food_rotation &lt;- food_pca
+
+#Scree plot
+plot(food_pca)</code></pre>
+<p><img src="Assignment_1_Task_2_files/figure-html/unnamed-chunk-4-2.png" width="672" /></p>
+<p>PC1 accounts for 32.2% of variance, and PC2 accounts for 18% of variance. Approximately 50% of the variance is explained by the first two principle components out of a total of 23 PCs.</p>
+<div id="plot-the-biplot" class="section level4">
+<h4>Plot the biplot</h4>
+<pre class="r"><code>autoplot(food_pca,
+         colour = &quot;Black&quot;,
+         loadings.label = TRUE,
+         loadings.label.size = c(3),
+         loadings.label.repel = TRUE,
+         alpha = 0.5) +
+  theme_bw() +
+  scale_x_continuous(limits = c(-0.1, 0.05)) +
+  scale_y_continuous(limits = c(-0.2, 0.2))</code></pre>
+<p><img src="Assignment_1_Task_2_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p>Figure 1. Principal components analysis (PCA) on food nutrients measured in breakfast cereals . Principal component 1 (PC1) accounted for 32.2% of variation in food nutrients, and principal component 2 (PC2) accounted for an additional 18% of food nutrient variation.</p>
+</div>
+<div id="takeaways" class="section level3">
+<h3>Takeaways</h3>
+<p>In breakfast cereal, highly positively correlated nutrient pairs are fiber, fat, and selenium.</p>
+</div>

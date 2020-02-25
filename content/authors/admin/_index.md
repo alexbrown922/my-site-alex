@@ -25,15 +25,12 @@ social:
 - icon: envelope
   icon_pack: fas
   link: '#contact'
-- icon: twitter
+- icon: linkedin
   icon_pack: fab
-  link: https://twitter.com/GeorgeCushen
-- icon: google-scholar
-  icon_pack: ai
-  link: https://scholar.google.co.uk/citations?user=sIwtMXoAAAAJ
+  link: 'https://www.linkedin.com/in/alexbrown41/'
 - icon: github
   icon_pack: fab
-  link: https://github.com/gcushen
+  link: https://github.com/alexbrown922
 superuser: true
 user_groups:
 - Researchers

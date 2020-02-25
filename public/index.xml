@@ -75,21 +75,6 @@
     </item>
     
     <item>
-      <title>My awesome post!</title>
-      <link>/project/my-new-project/</link>
-      <pubDate>Thu, 09 Jan 2020 00:00:00 +0000</pubDate>
-      <guid>/project/my-new-project/</guid>
-      <description>
-
-
-&lt;p&gt;Here’s some sweet code!&lt;/p&gt;
-&lt;p&gt;An amazing plot:&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;plot(cars)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/project/my-new-project/index_files/figure-html/unnamed-chunk-1-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
       <title>Writing technical content in Academic</title>
       <link>/post/writing-technical-content/</link>
       <pubDate>Fri, 12 Jul 2019 00:00:00 +0000</pubDate>
@@ -714,6 +699,194 @@ Figure 1: A fancy pie chart.
   &lt;/div&gt;
 &lt;/div&gt;
 &lt;p&gt;Supplementary notes can be added here, including &lt;a href=&#34;https://sourcethemes.com/academic/docs/writing-markdown-latex/&#34;&gt;code and math&lt;/a&gt;.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Mean Weight of Snowshore Hare</title>
+      <link>/project/snowshoe-hare/assignment_1_task_1/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>/project/snowshoe-hare/assignment_1_task_1/</guid>
+      <description>
+&lt;script src=&#34;Assignment_1_Task_1_files/kePrint/kePrint.js&#34;&gt;&lt;/script&gt;
+
+
+&lt;p&gt;This project calculates the mean weight (g) of a sample of Showshoe Hares in the Bonanza Creek Experimental Forest. The sample data collected from 1999-2012 reveals information on species health in the region. Mean weight and sample size of male and female Showshoe Hares for the sample are illustrated below:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;#read in the showshoe hare sample csv
+showshoe &amp;lt;- read_csv(&amp;quot;showshoe_lter.csv&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Source: &lt;a href=&#34;https://portal.lternet.edu/nis/metadataviewer?packageid=knb-lter-bnz.55.22&#34; class=&#34;uri&#34;&gt;https://portal.lternet.edu/nis/metadataviewer?packageid=knb-lter-bnz.55.22&lt;/a&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;#exploring the data set
+summary(showshoe)
+View(showshoe)
+names(showshoe)
+head(showshoe)
+tail(showshoe)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;#wrangling data into tidy format
+unique(showshoe$sex)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##  [1] NA   &amp;quot;M&amp;quot;  &amp;quot;F&amp;quot;  &amp;quot;?&amp;quot;  &amp;quot;F?&amp;quot; &amp;quot;M?&amp;quot; &amp;quot;pf&amp;quot; &amp;quot;m&amp;quot;  &amp;quot;f&amp;quot;  &amp;quot;f?&amp;quot; &amp;quot;m?&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;showshoe_tidy &amp;lt;- showshoe %&amp;gt;% 
+  filter(!is.na(sex)) %&amp;gt;% 
+  mutate(sex = str_to_upper(sex)) %&amp;gt;% 
+  filter(sex %in% c(&amp;quot;M&amp;quot;, &amp;quot;F&amp;quot;))  %&amp;gt;%
+  filter(!is.na(weight))
+unique(showshoe_tidy$sex)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## [1] &amp;quot;M&amp;quot; &amp;quot;F&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;div id=&#34;picture-of-snowshoe-hare&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Picture of Snowshoe Hare&lt;/h3&gt;
+&lt;div class=&#34;figure&#34;&gt;
+&lt;img src=&#34;snowshoe_hare.jpg&#34; /&gt;
+
+&lt;/div&gt;
+&lt;p&gt;(Photo by Jim Cumming)&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;#Plot body weight by sex for Showshoe Hare
+showshoe_boxplot &amp;lt;- ggplot(showshoe_tidy, aes(x = sex, y = weight)) +
+  geom_jitter(width = 0.1, alpha = 0.3, aes(color = sex)) +
+  theme_classic() +
+  labs (x = &amp;quot;Sex&amp;quot;, y = &amp;quot;Body weight (g)&amp;quot;, color = &amp;quot;Sex&amp;quot;, title = &amp;quot;Showshoe Hare Body Mass by Sex&amp;quot;, subtitle = &amp;quot;Figure 1: Jitter plot&amp;quot;)
+
+showshoe_boxplot &lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;Assignment_1_Task_1_files/figure-html/plot data-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;#calculate summary statistics for summary table
+showshoe_summary &amp;lt;- showshoe_tidy %&amp;gt;% 
+  group_by(sex) %&amp;gt;% 
+  summarize(
+    mean = round(mean(weight), 2),
+    sd = round(sd(weight), 2),
+    n = length(sex)
+  )&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;#create summary table for Showshoe Hare that shows mean weight, standard deviation, and sample size by sex.
+showshoe_table &amp;lt;- kable(showshoe_summary, caption = &amp;quot;Summary Table of Showshoe Hares. Mean Weight, Standard Deviation, and Sample Size by Sex of Showshoe Hares&amp;quot;, 
+                     col.names = c(&amp;quot;Sex&amp;quot;,&amp;quot;Mean Weight (g)&amp;quot;,&amp;quot;Standard Deviation (g)&amp;quot;,&amp;quot;Sample Size&amp;quot;)) %&amp;gt;% 
+  kable_styling(full_width = F, position = &amp;quot;center&amp;quot;)
+
+showshoe_table&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;table&#34; style=&#34;width: auto !important; margin-left: auto; margin-right: auto;&#34;&gt;
+&lt;caption&gt;
+(#tab:finalize table)Summary Table of Showshoe Hares. Mean Weight, Standard Deviation, and Sample Size by Sex of Showshoe Hares
+&lt;/caption&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th style=&#34;text-align:left;&#34;&gt;
+Sex
+&lt;/th&gt;
+&lt;th style=&#34;text-align:right;&#34;&gt;
+Mean Weight (g)
+&lt;/th&gt;
+&lt;th style=&#34;text-align:right;&#34;&gt;
+Standard Deviation (g)
+&lt;/th&gt;
+&lt;th style=&#34;text-align:right;&#34;&gt;
+Sample Size
+&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left;&#34;&gt;
+F
+&lt;/td&gt;
+&lt;td style=&#34;text-align:right;&#34;&gt;
+1365.16
+&lt;/td&gt;
+&lt;td style=&#34;text-align:right;&#34;&gt;
+347.45
+&lt;/td&gt;
+&lt;td style=&#34;text-align:right;&#34;&gt;
+1511
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left;&#34;&gt;
+M
+&lt;/td&gt;
+&lt;td style=&#34;text-align:right;&#34;&gt;
+1349.94
+&lt;/td&gt;
+&lt;td style=&#34;text-align:right;&#34;&gt;
+305.73
+&lt;/td&gt;
+&lt;td style=&#34;text-align:right;&#34;&gt;
+1117
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Principle Components Analysis: Nutrients in Breakfast Cereals</title>
+      <link>/project/principle-component-analysis/assignment_1_task_2/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>/project/principle-component-analysis/assignment_1_task_2/</guid>
+      <description>
+
+
+&lt;p&gt;The following report will examine the amount of nutrients in breakfast cereals usung a principal components analysis (PCA). Using a PCA allows for us to analyze the relationship and effect the 23 different nutrients have in breakfast cereals. The data is provided by the &lt;a href=&#34;https://fdc.nal.usda.gov/index.html&#34;&gt;USDA National Nutrient Database&lt;/a&gt;.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;#load packages
+library(tidyverse)
+library(janitor)
+library(VIM)
+library(skimr)
+library(naniar)
+library(ggfortify)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;#Load in the data
+food &amp;lt;- read_csv(&amp;quot;usda_nutrients.csv&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;food_subset &amp;lt;- food %&amp;gt;% 
+  clean_names() %&amp;gt;%
+  mutate(food_group = str_to_lower(food_group)) %&amp;gt;%
+  filter(food_group == &amp;quot;breakfast cereals&amp;quot;) %&amp;gt;% # look at breakfast cereals
+  select(energy_kcal:zinc_mg) #choose nutrients to keep&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;#PCA
+food_pca &amp;lt;- prcomp(food_subset, scale=TRUE)
+
+#Look for missingness
+naniar::gg_miss_var(food_subset) &lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;Assignment_1_Task_2_files/figure-html/unnamed-chunk-4-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;summary(food_pca)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Importance of components:
+##                          PC1    PC2     PC3     PC4     PC5     PC6     PC7
+## Standard deviation     2.721 2.0320 1.48235 1.22419 1.07618 0.97797 0.91955
+## Proportion of Variance 0.322 0.1795 0.09554 0.06516 0.05036 0.04158 0.03676
+## Cumulative Proportion  0.322 0.5015 0.59706 0.66222 0.71258 0.75416 0.79092
+##                            PC8     PC9    PC10    PC11    PC12    PC13    PC14
+## Standard deviation     0.91297 0.82015 0.75135 0.72210 0.60578 0.57428 0.54744
+## Proportion of Variance 0.03624 0.02925 0.02454 0.02267 0.01596 0.01434 0.01303
+## Cumulative Proportion  0.82716 0.85641 0.88095 0.90362 0.91958 0.93392 0.94695
+##                           PC15    PC16    PC17    PC18    PC19    PC20    PC21
+## Standard deviation     0.53418 0.50469 0.46037 0.44490 0.30195 0.28127 0.25733
+## Proportion of Variance 0.01241 0.01107 0.00921 0.00861 0.00396 0.00344 0.00288
+## Cumulative Proportion  0.95936 0.97043 0.97965 0.98825 0.99222 0.99565 0.99853
+##                           PC22    PC23
+## Standard deviation     0.16761 0.07502
+## Proportion of Variance 0.00122 0.00024
+## Cumulative Proportion  0.99976 1.00000&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;#Rotation 
+food_rotation &amp;lt;- food_pca
+
+#Scree plot
+plot(food_pca)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;Assignment_1_Task_2_files/figure-html/unnamed-chunk-4-2.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;PC1 accounts for 32.2% of variance, and PC2 accounts for 18% of variance. Approximately 50% of the variance is explained by the first two principle components out of a total of 23 PCs.&lt;/p&gt;
+&lt;div id=&#34;plot-the-biplot&#34; class=&#34;section level4&#34;&gt;
+&lt;h4&gt;Plot the biplot&lt;/h4&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;autoplot(food_pca,
+         colour = &amp;quot;Black&amp;quot;,
+         loadings.label = TRUE,
+         loadings.label.size = c(3),
+         loadings.label.repel = TRUE,
+         alpha = 0.5) +
+  theme_bw() +
+  scale_x_continuous(limits = c(-0.1, 0.05)) +
+  scale_y_continuous(limits = c(-0.2, 0.2))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;Assignment_1_Task_2_files/figure-html/unnamed-chunk-5-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Figure 1. Principal components analysis (PCA) on food nutrients measured in breakfast cereals . Principal component 1 (PC1) accounted for 32.2% of variation in food nutrients, and principal component 2 (PC2) accounted for an additional 18% of food nutrient variation.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;takeaways&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Takeaways&lt;/h3&gt;
+&lt;p&gt;In breakfast cereal, highly positively correlated nutrient pairs are fiber, fat, and selenium.&lt;/p&gt;
+&lt;/div&gt;
 </description>
     </item>
     

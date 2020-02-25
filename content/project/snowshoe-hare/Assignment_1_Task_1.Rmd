@@ -1,0 +1,92 @@
+---
+banner: project/snowshoe_hare.jpg
+title: "Mean Weight of Snowshore Hare"
+author: "Alex Brown"
+date: "2/6/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warning = FALSE,
+                      message = FALSE)
+```
+This project calculates the mean weight (g) of a sample of Showshoe Hares in the Bonanza Creek Experimental Forest. The sample data collected from 1999-2012 reveals information on species health in the region. Mean weight and sample size of male and female Showshoe Hares for the sample are illustrated below:
+
+```{r load packages, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      message = FALSE, 
+                      warning = FALSE)
+
+# load packages
+library(tidyverse)
+library(janitor) 
+library(kableExtra)
+
+
+```
+
+
+```{r}
+#read in the showshoe hare sample csv
+showshoe <- read_csv("showshoe_lter.csv")
+```
+Source: https://portal.lternet.edu/nis/metadataviewer?packageid=knb-lter-bnz.55.22
+
+```{r, eval = FALSE}
+#exploring the data set
+summary(showshoe)
+View(showshoe)
+names(showshoe)
+head(showshoe)
+tail(showshoe)
+```
+
+
+```{r}
+#wrangling data into tidy format
+unique(showshoe$sex)
+showshoe_tidy <- showshoe %>% 
+  filter(!is.na(sex)) %>% 
+  mutate(sex = str_to_upper(sex)) %>% 
+  filter(sex %in% c("M", "F"))  %>%
+  filter(!is.na(weight))
+unique(showshoe_tidy$sex)
+```
+### Picture of Snowshoe Hare
+
+![](snowshoe_hare.jpg)
+
+
+(Photo by Jim Cumming)
+
+```{r, plot data, fig.align = 'center'}
+#Plot body weight by sex for Showshoe Hare
+showshoe_boxplot <- ggplot(showshoe_tidy, aes(x = sex, y = weight)) +
+  geom_jitter(width = 0.1, alpha = 0.3, aes(color = sex)) +
+  theme_classic() +
+  labs (x = "Sex", y = "Body weight (g)", color = "Sex", title = "Showshoe Hare Body Mass by Sex", subtitle = "Figure 1: Jitter plot")
+
+showshoe_boxplot 
+```
+
+
+```{r, summary statistics}
+#calculate summary statistics for summary table
+showshoe_summary <- showshoe_tidy %>% 
+  group_by(sex) %>% 
+  summarize(
+    mean = round(mean(weight), 2),
+    sd = round(sd(weight), 2),
+    n = length(sex)
+  )
+```
+
+```{r, finalize table}
+#create summary table for Showshoe Hare that shows mean weight, standard deviation, and sample size by sex.
+showshoe_table <- kable(showshoe_summary, caption = "Summary Table of Showshoe Hares. Mean Weight, Standard Deviation, and Sample Size by Sex of Showshoe Hares", 
+                     col.names = c("Sex","Mean Weight (g)","Standard Deviation (g)","Sample Size")) %>% 
+  kable_styling(full_width = F, position = "center")
+
+showshoe_table
+```

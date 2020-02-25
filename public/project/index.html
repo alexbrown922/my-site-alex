@@ -236,7 +236,7 @@
   <meta property="og:description" content="Master&#39;s Student"><meta property="og:image" content="/images/icon_hu0b7a4cb9992c9ac0e91bd28ffd38dd00_9727_512x512_fill_lanczos_center_2.png">
   <meta property="twitter:image" content="/images/icon_hu0b7a4cb9992c9ac0e91bd28ffd38dd00_9727_512x512_fill_lanczos_center_2.png"><meta property="og:locale" content="en-us">
   
-    <meta property="og:updated_time" content="2020-01-09T00:00:00&#43;00:00">
+    <meta property="og:updated_time" content="2016-04-27T00:00:00&#43;00:00">
   
 
   
@@ -352,36 +352,7 @@
         
 
         <li class="nav-item">
-          <a class="nav-link " href="/#hero"><span>Demo</span></a>
-        </li>
-
-        
-        
-
-        
-
-        
-        
-        
-          
-        
-
-        
-        
-        
-        
-        
-        
-          
-          
-          
-            
-          
-          
-        
-
-        <li class="nav-item">
-          <a class="nav-link " href="/#posts"><span>Posts</span></a>
+          <a class="nav-link " href="/#experience"><span>Experience</span></a>
         </li>
 
         
@@ -439,58 +410,29 @@
         
 
         <li class="nav-item">
-          <a class="nav-link " href="/#featured"><span>Publications</span></a>
-        </li>
-
-        
-        
-
-        
-
-        
-        
-        
-          
-        
-
-        
-        
-        
-        
-        
-        
-
-        <li class="nav-item">
-          <a class="nav-link " href="/courses/"><span>Courses</span></a>
-        </li>
-
-        
-        
-
-        
-
-        
-        
-        
-          
-        
-
-        
-        
-        
-        
-        
-        
-          
-          
-          
-            
-          
-          
-        
-
-        <li class="nav-item">
           <a class="nav-link " href="/#contact"><span>Contact</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/files/cv.pdf"><span>Resume</span></a>
         </li>
 
         
@@ -559,17 +501,6 @@
   
   
   <div>
-    <h2><a href="/project/my-new-project/">My awesome post!</a></h2>
-    <div class="article-style">
-      
-       Here’s some sweet code!
-An amazing plot:
-plot(cars) 
-      
-    </div>
-  </div>
-  
-  <div>
     <h2><a href="/project/external-project/">External Project</a></h2>
     <div class="article-style">
       
@@ -583,6 +514,27 @@ plot(cars)
     <div class="article-style">
       
       An example of using the in-built project page.
+      
+    </div>
+  </div>
+  
+  <div>
+    <h2><a href="/project/snowshoe-hare/assignment_1_task_1/">Mean Weight of Snowshore Hare</a></h2>
+    <div class="article-style">
+      
+      This project calculates the mean weight (g) of a sample of Showshoe Hares in the Bonanza Creek Experimental Forest. The sample data collected from 1999-2012 reveals information on species health in the region. Mean weight and sample size of male and female Showshoe Hares for the sample are illustrated below:
+#read in the showshoe hare sample csv showshoe &lt;- read_csv(&quot;showshoe_lter.csv&quot;) Source: https://portal.lternet.edu/nis/metadataviewer?packageid=knb-lter-bnz.55.22
+#exploring the data set summary(showshoe) View(showshoe) names(showshoe) head(showshoe) tail(showshoe) #wrangling data into tidy format unique(showshoe$sex) ## [1] NA &quot;M&quot; &quot;F&quot; &quot;?
+      
+    </div>
+  </div>
+  
+  <div>
+    <h2><a href="/project/principle-component-analysis/assignment_1_task_2/">Principle Components Analysis: Nutrients in Breakfast Cereals</a></h2>
+    <div class="article-style">
+      
+      The following report will examine the amount of nutrients in breakfast cereals usung a principal components analysis (PCA). Using a PCA allows for us to analyze the relationship and effect the 23 different nutrients have in breakfast cereals. The data is provided by the USDA National Nutrient Database.
+#load packages library(tidyverse) library(janitor) library(VIM) library(skimr) library(naniar) library(ggfortify) #Load in the data food &lt;- read_csv(&quot;usda_nutrients.csv&quot;) food_subset &lt;- food %&gt;% clean_names() %&gt;% mutate(food_group = str_to_lower(food_group)) %&gt;% filter(food_group == &quot;breakfast cereals&quot;) %&gt;% # look at breakfast cereals select(energy_kcal:zinc_mg) #choose nutrients to keep #PCA food_pca &lt;- prcomp(food_subset, scale=TRUE) #Look for missingness naniar::gg_miss_var(food_subset)  summary(food_pca) ## Importance of components: ## PC1 PC2 PC3 PC4 PC5 PC6 PC7 ## Standard deviation 2.
       
     </div>
   </div>

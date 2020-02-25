@@ -1,0 +1,78 @@
+---
+title: "Principle Components Analysis: Nutrients in Breakfast Cereals"
+author: "Alex Brown"
+date: "2/6/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warning = FALSE,
+                      message = FALSE)
+```
+
+The following report will examine the amount of nutrients in breakfast cereals usung a principal components analysis (PCA). Using a PCA allows for us to analyze the relationship and effect the 23 different nutrients have in breakfast cereals. The data is provided by the [USDA National Nutrient Database](https://fdc.nal.usda.gov/index.html).
+
+```{r, message=FALSE, warning=FALSE}
+#load packages
+library(tidyverse)
+library(janitor)
+library(VIM)
+library(skimr)
+library(naniar)
+library(ggfortify)
+```
+
+```{r}
+#Load in the data
+food <- read_csv("usda_nutrients.csv")
+```
+
+
+```{r}
+food_subset <- food %>% 
+  clean_names() %>%
+  mutate(food_group = str_to_lower(food_group)) %>%
+  filter(food_group == "breakfast cereals") %>% # look at breakfast cereals
+  select(energy_kcal:zinc_mg) #choose nutrients to keep
+```
+
+```{r}
+#PCA
+food_pca <- prcomp(food_subset, scale=TRUE)
+
+#Look for missingness
+naniar::gg_miss_var(food_subset) 
+
+summary(food_pca)
+
+#Rotation 
+food_rotation <- food_pca
+
+#Scree plot
+plot(food_pca)
+```
+
+PC1 accounts for 32.2% of variance, and PC2 accounts for 18% of variance. Approximately 50% of the variance is explained by the first two principle components out of a total of 23 PCs. 
+
+#### Plot the biplot
+```{r, warning=FALSE}
+autoplot(food_pca,
+         colour = "Black",
+         loadings.label = TRUE,
+         loadings.label.size = c(3),
+         loadings.label.repel = TRUE,
+         alpha = 0.5) +
+  theme_bw() +
+  scale_x_continuous(limits = c(-0.1, 0.05)) +
+  scale_y_continuous(limits = c(-0.2, 0.2))
+```
+
+Figure 1. Principal components analysis (PCA) on food nutrients measured in breakfast cereals . Principal component 1 (PC1) accounted for 32.2% of variation in food nutrients, and principal component 2 (PC2) accounted for an additional 18% of food nutrient variation. 
+
+###Takeaways
+In breakfast cereal, highly positively correlated nutrient pairs are fiber, fat, and selenium.
+
+
+
+
