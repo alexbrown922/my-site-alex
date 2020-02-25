@@ -34,6 +34,138 @@
     </item>
     
     <item>
+      <title>Bonneville Dam Steelhead Trout Passage</title>
+      <link>/project/bonneville-dam-steelhead-passage/assignment_2_task_2/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>/project/bonneville-dam-steelhead-passage/assignment_2_task_2/</guid>
+      <description>
+
+
+&lt;p&gt;The Columbia Basin Research Center collects data on the number of fish that pass through the Columbia River from British Columbia through Oregon. Data is collected at each dam along the river, including the Bonneville dam in Oregon through the Data Access in Real Time (DART) program.&lt;/p&gt;
+&lt;div id=&#34;bonneville-dam&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Bonneville Dam&lt;/h3&gt;
+&lt;p&gt;(Anonymous Traveler Photo)&lt;/p&gt;
+&lt;div class=&#34;figure&#34;&gt;
+&lt;img src=&#34;bonneville.jpg&#34; /&gt;
+
+&lt;/div&gt;
+&lt;p&gt;The following project will analyze the passage of steelhead trout through the Bonneville Dam from 1939 - 2019. Analysis will look at different patterns of passage daily, seasonally, and annually through the dam. The data is from &lt;a href=&#34;http://www.cbr.washington.edu/dart/query/adult_graph_text&#34;&gt;Columbia Basin Research.&lt;/a&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;code-steps&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Code Steps&lt;/h3&gt;
+&lt;p&gt;Load packages&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(tidyverse)
+library(janitor)
+library(feasts)
+library(tsibble)
+library(lubridate)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Read in data&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;steelhead_raw &amp;lt;- read_csv(&amp;quot;cbr_fish_passage_bonneville_allyrs_steelhead.csv&amp;quot;) %&amp;gt;% 
+  clean_names()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Tidy the data&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;steelhead &amp;lt;- steelhead_raw %&amp;gt;%
+  drop_na(value) %&amp;gt;% #remove NA values
+  filter(value&amp;gt;=0) %&amp;gt;% #remove negative values
+  separate(mm_dd, into=c(&amp;quot;day&amp;quot;, &amp;quot;month&amp;quot;)) %&amp;gt;% #separate month from day
+  mutate(yr_mo_day = paste(year, match(month,month.abb), day, sep=&amp;quot;-&amp;quot;), 
+         yr_mo = paste(year, match(month,month.abb), sep=&amp;quot;-&amp;quot;),
+         date = as.Date(yr_mo_day)) %&amp;gt;% 
+  filter(!is.na(date)) %&amp;gt;% #remove leap year date(s)
+  mutate(year_month = tsibble::yearmonth(yr_mo_day)) %&amp;gt;% 
+  select(&amp;quot;year&amp;quot;, &amp;quot;year_month&amp;quot;, &amp;quot;yr_mo&amp;quot;, &amp;quot;date&amp;quot;, &amp;quot;value&amp;quot;) # select relevant columns&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;daily-data&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Daily Data&lt;/h3&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;steelhead_day &amp;lt;- ggplot(data=steelhead, aes(x=date, y=value)) +
+  geom_line() +
+  xlab(&amp;quot;Date&amp;quot;) +
+  ylab(&amp;quot;Number of fish&amp;quot;) +
+  theme_minimal()
+
+steelhead_day&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/project/Bonneville-Dam-Steelhead-Passage/Assignment_2_Task_2_files/figure-html/unnamed-chunk-4-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Figure 1. Amount of Steelhead Trout per day passing through Bonneville Dam (1939 - 2019).&lt;/p&gt;
+&lt;p&gt;There seems to be an aspect of seasonality to the number of Steelhead Trout passing through the dam. This could relate to species-specific migration habits.&lt;/p&gt;
+&lt;p&gt;By looking at the first 3000 observations, we can see this seasonality more clearly…&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;steelhead_trimmed &amp;lt;- tail(steelhead, n=3000)
+ggplot(data=steelhead_trimmed, aes(x=date, y=value)) +
+  geom_line()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/project/Bonneville-Dam-Steelhead-Passage/Assignment_2_Task_2_files/figure-html/unnamed-chunk-5-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;monthly-data&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Monthly Data&lt;/h3&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;steelhead_month &amp;lt;- ggplot(data=steelhead, aes(x=year_month, y=value)) +
+  geom_line()
+steelhead_month&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/project/Bonneville-Dam-Steelhead-Passage/Assignment_2_Task_2_files/figure-html/unnamed-chunk-6-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;yearly-data&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Yearly Data&lt;/h3&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;steelhead_year &amp;lt;- ggplot(data=steelhead, aes(x=year, y=value)) +
+  geom_line()
+steelhead_year&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/project/Bonneville-Dam-Steelhead-Passage/Assignment_2_Task_2_files/figure-html/unnamed-chunk-7-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;plot-steelhead-passage-by-season&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Plot Steelhead Passage by Season&lt;/h3&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;#Make a tsibble
+steelhead_ts &amp;lt;- as_tsibble(steelhead, index= year_month)
+duplicates(steelhead, index=year_month)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 0 x 5
+## # … with 5 variables: year &amp;lt;dbl&amp;gt;, year_month &amp;lt;mth&amp;gt;, yr_mo &amp;lt;chr&amp;gt;, date &amp;lt;date&amp;gt;,
+## #   value &amp;lt;dbl&amp;gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;#plot tsibble plots
+steelhead_ts %&amp;gt;% autoplot(value)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/project/Bonneville-Dam-Steelhead-Passage/Assignment_2_Task_2_files/figure-html/unnamed-chunk-8-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;steelhead_ts %&amp;gt;% gg_subseries(value) +
+  geom_line(aes(color=year)) +
+  xlab(&amp;quot;Date&amp;quot;) +
+  ylab(&amp;quot;Number of fish&amp;quot;) +
+  theme_minimal()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/project/Bonneville-Dam-Steelhead-Passage/Assignment_2_Task_2_files/figure-html/unnamed-chunk-8-2.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;The months of July, August, and September seem to be the peak time for Steelhead Trout passage through the Bonneville Dam.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;steelhead_summary &amp;lt;- steelhead %&amp;gt;% 
+  group_by(yr_mo) %&amp;gt;%
+  summarise(sums=sum(value)) %&amp;gt;% 
+  mutate(year_month = tsibble::yearmonth(yr_mo), 
+         month = month(year_month, label = TRUE),
+         year = year(year_month),
+         sums=replace_na(sums, 0)) #replace all NA values w/ 0
+# make a tsibble
+steelhead_summary_ts &amp;lt;- as_tsibble(steelhead_summary, index= year_month) %&amp;gt;% 
+  fill_gaps() 
+
+#ggplot of seasons 
+ggplot(data=steelhead_summary, aes(x=month, y=sums, group=year)) +
+  geom_line(aes(color=year)) +
+  scale_colour_gradientn(colours = c(&amp;quot;red&amp;quot;,&amp;quot;yellow&amp;quot;,&amp;quot;blue&amp;quot;)) +
+  scale_y_continuous(labels = function(x) format(x, scientific = FALSE)) +
+  xlab(&amp;quot;Month&amp;quot;) +
+  ylab(&amp;quot;Number of fish&amp;quot;) +
+  theme_minimal()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/project/Bonneville-Dam-Steelhead-Passage/Assignment_2_Task_2_files/figure-html/unnamed-chunk-9-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Figure 2. Amount of Steelhead Trout per season passing through Bonneville Dam (1939 - 2019).&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;plot-steelhead-trout-passage-by-year&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Plot Steelhead Trout Passage by Year&lt;/h3&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;steelhead_annual &amp;lt;- steelhead_summary %&amp;gt;% 
+  group_by(year) %&amp;gt;% 
+  summarize(sumsofsums=sum(sums))
+#ggplot of annual passage data
+ggplot(data=steelhead_annual, aes(x=year, y=sumsofsums)) +
+  geom_line() +
+  scale_y_continuous(labels = function(x) format(x, scientific = FALSE)) +
+  xlab(&amp;quot;Date&amp;quot;) +
+  ylab(&amp;quot;Number of fish&amp;quot;) +
+  theme_bw()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/project/Bonneville-Dam-Steelhead-Passage/Assignment_2_Task_2_files/figure-html/unnamed-chunk-10-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Figure 3. Amount of Steelhead Trout per year passing through Bonneville Dam (1939 - 2019).&lt;/p&gt;
+&lt;p&gt;Steelhead Trout passage through the Bonneville Dam was increasing from approximately 1980 to 2010, however there seems to be a steady decrease in the past decade.&lt;/p&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
       <title>Mean Weight of Snowshore Hare</title>
       <link>/project/snowshoe-hare/assignment_1_task_1/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>

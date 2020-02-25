@@ -25,7 +25,7 @@ date_format = "Jan 2006"
   date_start = "2019-06-24"
   date_end = "2019-09-01"
   description = """
-  Responsibilities include:
+  Responsibilities:
   
   * Assisted in drafting CEQA documentation including: Environmental Impact Reports (EIRs), Initial Studies (IS), Mitigated Negative Declarations (IS-MND), Notices of Preparation (NOP), and Mitigation Monitoring and Reporting Programs (MMRPs).
   * Conducted site visits for CEQA documentation, environmental soil boring/samples, noise measurements, and photo documentation.
@@ -41,7 +41,7 @@ date_format = "Jan 2006"
   date_start = "2019-04-01"
   date_end = "2020-04-14"
   description = """
-  Responsibilities include:
+  Responsibilities:
   
   * Organized meteorological, soil moisture, incoming shortwave radiation, and other relevant data for group project.
   * Cleaned data sets for compatibility with urban heat island effect model (SUEWS Model).
@@ -56,7 +56,7 @@ date_format = "Jan 2006"
   date_start = "2016-09-01"
   date_end = "2018-06-14"
   description = """
-  Responsibilities include:
+  Responsibilities:
   
   * Wrote content pieces on behalf of ProjectManager.com about project management and team strategy.
   * Improved high-traffic keyword performance by a factor of 43 through thorough backlink research and white hat SEO best practices.
@@ -74,7 +74,7 @@ date_format = "Jan 2006"
   date_start = "2018-09-01"
   date_end = "2020-06-14"
   description = """
-  Responsibilities include:
+  Responsibilities:
   
   * Teaching Assistant for the Department of Communication, Winter quarter 2020.
   * Teaching Assistant for the Department of Communication, Fall quarter 2019.
@@ -91,7 +91,7 @@ date_format = "Jan 2006"
   date_start = "2017-05-01"
   date_end = "2017-08-14"
   description = """
-  Responsibilities include:
+  Responsibilities:
   
   * Taught daily SAT reading and writing classes of 25 students at The Princeton Review branch in Seoul, South Korea.
   * Facilitated reading comprehension discussions to children ages 10 to 12 by reading classic literature.
@@ -105,7 +105,7 @@ date_format = "Jan 2006"
   date_start = "2016-01-01"
   date_end = "2016-06-14"
   description = """
-  Responsibilities include:
+  Responsibilities:
   
   * Developed automated email strategy to acquire cleantech jobs and news for the CleanTX site.
   * Managed CleanTX social media presence (Twitter, Facebook, LinkedIn) and email outreach strategy.
@@ -121,7 +121,7 @@ date_format = "Jan 2006"
   date_start = "2015-05-01"
   date_end = "2015-08-14"
   description = """
-  Responsibilities include:
+  Responsibilities:
   
   * Researched and summarized relevant legislation for 2015 legislative sessions in 18 states in layman’s terms for a general audience.
   * Analyzed original bill texts and discerned key provisions to better summarize key aspects of pending legislation.
