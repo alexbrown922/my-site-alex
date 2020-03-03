@@ -1,0 +1,607 @@
+---
+title: "California Spiny Lobster Analysis"
+author: "Alex Brown Jessica Jagdeo"
+date: "11/14/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include = FALSE}
+
+# A. Load packages and read in data files.
+
+
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+library(plotly)
+library(pwr)
+library(car)
+library(RColorBrewer)
+library(extrafont)
+library(ggrepel)
+library(effsize)
+library(ggpubr)
+library(vcdExtra)
+library(dplyr)
+library(RColorBrewer)
+
+lobster_abundance <- read_csv("lobster_size_abundance.csv")
+
+lobster_traps <- read_csv("lobster_traps.csv")
+
+```
+##Introduction 
+
+The California spiny lobster (Panulirus Interruptus) inhabits crevices and kelp holdfasts hollowed out by grazing sea urchins in rocky marine regions from California down to the Baja California Peninsula (1). These lobsters are vital to the state’s economy, as fisheries prosper when the lobster populations are healthy and abundant. Threats to the lobster population have encouraged sustainability efforts, resulting in the establishment of marine protected areas (MPAs) (4). Marine protected areas serve a dual purpose by ensuring the ecosystem’s vitality and safeguarding the lobster population, improving the health of nearby fisheries. The effectiveness of marine protected areas in increasing lobster abundance is seen as lobster catch rates tend to be higher at the borders between MPAs and non-MPAs (3). 
+
+In terms of ecology, Panulirus interruptus play an important role in curbing the population of herbivorous sea urchins. California spiny lobsters are predators of two species of sea urchins, whose consumption patterns affect the health of kelp forests (6). By managing sea urchin populations, these lobsters encourage the growth of kelp forests off the California coast, benefiting members of the marine ecosystem that rely on kelp forests for their habitat.  
+
+In the Santa Barbara Channel, divers recorded counts and measurements of California spiny lobsters from 2012 to 2017 at five long-term ecological research sites: Arroyo Quemado, Carpinteria, Mohawk Reef, Isla Vista, and Naples Reef (Fig. 1). In addition, researchers counted the number of lobster trap buoys at each location within this time period to determine fishing pressure on the California spiny lobster. Two of the five sites observed, Naples Reef and Isla Vista, are marine protected areas. This report examines lobster abundance, carapace length (mm), and fishing pressure based on trap presence at the five sites.
+
+##Data, Data Analysis and Statistical Methods
+
+The data used in this study was provided by the Santa Barbara Coastal Long Term Ecological Research Program and analyzed in RStudio5. Lobster samples were obtained from 40 m transects defined by six permanent markers. Lobster sizes (in mm) were gauged by visual examination of the carapace length. The number of lobster trap buoys present in each site were used to determine fishing pressure. 
+
+Divers collected lobster abundance and size measurements each year between 2012 and 2017 before the start of the fishing season in the late summer. Lobster trap counts were gathered every two to four weeks during the lobster fishing season, spanning October to March, each year from 2012 to 2017. 
+
+A single factor ANOVA test was used to compare mean lobster sizes across the five sites in 2017. After an ANOVA was performed, a Tukey’s HSD post hoc test was performed to determine which sites had significantly different mean lobster sizes from each other. Student’s t-tests were utilized to compare mean lobster sizes in 2012 and 2017 at each site. A chi-square test determined if the proportion of observed lobsters at each site above the legal minimum length of 82.6 mm differed significantly across the five LTER locations.
+
+
+###Lobster Abundance and Fishing Pressure from 2012 to 2017 (1)
+```{r, include = FALSE}
+
+# B. Display data frame lobster_abundance in tidy format
+
+# First, simplify lobster_abundance data frame by removing rows with COUNT = 0
+
+lobster_abundance_simp <- lobster_abundance %>% 
+  filter(COUNT != 0) %>%  
+  group_by(SITE, YEAR)
+
+# Second, create tidy formatted data frame using expand.dft
+
+lobster_abundance_tidy <- expand.dft(as.data.frame(lobster_abundance_simp), var.names = NULL, freq = "COUNT")
+
+# Use lobster_abundance_tidy for all calculations (except column graph)
+
+
+# Filter lobster_traps to include only the 5 pertinent sites
+
+lobster_traps_simp <- lobster_traps %>% 
+  filter(SITE == "AQUE" | SITE == "CARP" | SITE == "IVEE" | SITE == "MOHK" | SITE == "NAPL")
+
+```
+
+```{r, include = FALSE}
+
+# First, create summary table of counts of lobsters at each site for each year
+
+size_summary_graphs <- lobster_abundance_tidy %>% 
+  group_by(SITE, YEAR) %>% 
+  filter(YEAR == "2012" | YEAR == "2013" | YEAR == "2014" | YEAR == "2015" | YEAR == "2016" | YEAR == "2017") %>% 
+  summarize(
+    sample_size = length(SIZE)
+  )
+
+size_summary_graphs
+
+
+carp_diff <- lobster_abundance_tidy %>% 
+  group_by(SITE, YEAR) %>% 
+  filter(YEAR == "2012" | YEAR == "2017", SITE == "CARP") %>% 
+  summarize(
+    sample_size = length(SIZE)
+  )
+
+carp_diff
+
+
+diff(carp_diff$sample_size)
+
+ivee_diff <- lobster_abundance_tidy %>% 
+  group_by(SITE, YEAR) %>% 
+  filter(YEAR == "2012" | YEAR == "2017", SITE == "IVEE") %>% 
+  summarize(
+    sample_size = length(SIZE)
+  )
+
+ivee_diff
+
+diff(ivee_diff$sample_size)
+```
+
+
+```{r, fig.height=5, echo = FALSE}
+
+# C. Determine the best graphical way to depict abundance and traps data: column or line graphs? Create column graphs and line graphs of lobster abundance by year at each of the 5 sites
+
+
+labels <- c(AQUE = "Arroyo Quemado", CARP = "Carpinteria", IVEE = "Isla Vista", MOHK = "Mohawk Reef", NAPL = "Naples Reef")
+
+
+abundance_col <- ggplot(size_summary_graphs, aes(x = YEAR, y = sample_size))+
+  geom_col(aes(fill = SITE)) +
+  scale_fill_manual(values = c("seagreen3", "violetred1", "sienna1", "slateblue1", "paleturquoise3")) +
+  scale_y_continuous(expand = c(0,0)) +
+  theme_classic() +
+  xlab("\nYear") +
+  ylab("Lobster Count\n") +
+  facet_wrap(~SITE, scales = "free", labeller = labeller(SITE = labels)) +
+  facet_grid(cols = vars(SITE), scales = "free_y", labeller = labeller(SITE = labels)) +
+  theme(legend.position = "none") +
+  theme(panel.spacing = unit(1, "lines")) 
+
+abundance_col
+
+
+# Note for Jess: Need to add space between facet_wrap labels and plots
+# Note for Jess: free scales in facet_grid
+    
+    
+```
+
+```{r, include = FALSE}
+
+traps_table <- lobster_traps_simp %>% 
+  filter(SITE != "IVEE",
+         SITE != "NAPL") %>% 
+  group_by(SITE, YEAR) %>% 
+  summarize(
+    total_traps = sum(TRAPS)
+  )
+
+traps_table
+
+
+
+aque_diff <- lobster_traps_simp %>% 
+  group_by(SITE, YEAR) %>% 
+  filter(YEAR == "2016" | YEAR == "2017", SITE == "AQUE") %>% 
+  summarize(
+    total_traps = sum(TRAPS)
+  )
+
+aque_diff
+
+
+abs(diff(aque_diff$total_traps))
+
+
+carp_diff <- lobster_traps_simp %>% 
+  group_by(SITE, YEAR) %>% 
+  filter(YEAR == "2016" | YEAR == "2017", SITE == "CARP") %>% 
+  summarize(
+    total_traps = sum(TRAPS)
+  )
+
+carp_diff
+
+
+abs(diff(carp_diff$total_traps))
+
+
+```
+
+
+**Figure 2. California Spiny Lobster Abundance at Five Long-Term Ecological Research Sites in the Santa Barbara Channel, 2012-2017.** Divers collected lobster abundance data for Panulirus interruptus at each of the five sites each year in late summer, before the start of the fishing season. The sites are Arroyo Quemado (AQUE), Naples Reef (NAPL), Mohawk Reef (MOHK), Isla Vista (IVEE), and Carpinteria (CARP). NAPL and IVEE are marine protected areas; AQUE, MOHK, and CARP are non-marine protected areas. Data source: Reed, D., Santa Barbara Coastal Long Term Ecological Research Project. 
+
+Lobster abundance, based on the amount of lobsters counted by divers before the start of the fishing season from 2012 to 2017, changed at Arroyo Quemado, Naples Reef, Mohawk Reef, Isla Vista, and Carpinteria within this time period (Fig. 2). Carpinteria and Isla Vista witnessed the largest gains in lobster count from 2012 to 2017, with a range of `r diff(carp_diff$sample_size)` and `r diff(ivee_diff$sample_size)` lobsters, respectively. In contrast, lobster abundance at Mohawk Reef and Naples Reef peaked in 2015, and subsequently declined. At Arroyo Quemado, lobster count does not display any drastic changes, although count peaked in 2014 and declined afterwards. 
+
+
+```{r, fig.height=4, echo = FALSE}
+
+# D. Create column graphs of fishing pressure (trap buoys) by year at each of the 5 sites
+
+traps_col <- lobster_traps_simp %>% 
+  filter(SITE != "IVEE",
+         SITE != "NAPL") %>% 
+  ggplot(aes(x = YEAR, y = TRAPS))+
+  geom_col(aes(fill = SITE)) +
+  scale_fill_manual(values = c("seagreen3", "violetred1", "slateblue1")) +
+  scale_y_continuous(expand = c(0,0)) +
+  theme_classic() +
+  xlab("\nYear") +
+  ylab("Number of Traps\n") +
+  facet_wrap(~SITE, labeller = labeller(SITE = labels)) +
+  theme(legend.position = "none") +
+  theme(panel.spacing = unit(1, "lines"))
+  
+
+traps_col
+
+
+# Note for Jess: Need to add space between facet_wrap labels and plots
+
+```
+
+**Figure 3. Commercial Lobster Trap Floats at Long-Term Ecological Research Sites in the Santa Barbara Channel, 2012-2017.** Data on the number of floats was collected every two to four weeks Oct-Mar, during the lobster fishing season. Commercial lobster trap floats act as indicators of fishing pressure at each location. NAPL and IVEE lack commercial trap floats because they are marine protected areas. Data source: Reed, D., Santa Barbara Coastal Long Term Ecological Research Project. 
+
+From 2012 to 2017, the number of lobster trap buoys were counted at Arroyo Quemado, Carpinteria, and Mohawk Reef to gauge fishing pressure at each site (Fig. 3). Isla Vista and Naples Reef did not have any commercial lobster trap floats within their regions because they are marine protected areas. Overall, each site saw a decrease in the amount of lobster trap floats present during this time period. At Arroyo Quemado, lobster traps increased from 2012 to 2013, leveled off from 2013 to 2016, and decreased by `r abs(diff(aque_diff$total_traps))` traps from 2016 to 2017. Carpinteria witnessed a peak in lobster traps in 2016, followed by a sharp drop in lobster trap numbers in 2017 resulting in a difference of `r abs(diff(carp_diff$total_traps))` traps. In contrast to these general patterns at Arroyo Quemado and Carpinteria, Mohawk Reef displayed a steadily declining number of lobster trap floats from 2012 to 2017. 
+
+
+
+###Average Lobster Size between Each Location in 2017 (2) 
+
+
+```{r, include = FALSE}
+# 2
+
+# Compare mean lobster sizes (carapace length (mm)) across the five sites for lobster observations collected in 2017.
+
+# create a new df with mean lobster sizes at the 5 locations
+
+# rename sites within column
+
+mean_lobster_size <- lobster_abundance_tidy %>% 
+  select(YEAR, SITE, SIZE) %>% 
+  filter(YEAR == "2017") %>% 
+  group_by(SITE) %>% 
+  summarize(mean = round(mean(SIZE), 2),
+            sd = round(sd(SIZE), 2))  %>% 
+  select(mean, sd)
+
+rownames(mean_lobster_size) <- c("Arroyo Quemado", "Carpenteria", "Isla Vista", "Mohawk Reef", "Naples Reef")
+
+mean_lobster_size
+
+```
+
+```{r, echo=FALSE}
+# create a table comparing mean lobster sizes at the 5 locations
+
+mean_lobster_tbl <- mean_lobster_size %>% 
+  kable(col.names = c("Mean Lobster Carapace Length (mm)", "Standard Deviation (mm)"),
+        caption = "**Table 1. Mean Lobster Sizes at 5 Locations in 2017.** Researchers collected Panulirus interruptus lobster abundance in 2017 at the sites of Arroyo Quemado (AQUE), Naples Reef (NAPL), Mohawk Reef (MOHK), Isla Vista (IVEE), and Carpinteria (CARP). Listed are the average carapace length (mm) of lobsters collected at each location and the standard deviation of the length (mm) of samples taken at each location. Data source: Reed, D., Santa Barbara Coastal Long Term Ecological Research Project.") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE) %>% 
+  row_spec(row = 5, bold = TRUE)
+  
+mean_lobster_tbl
+
+```
+
+```{r, include=FALSE}
+# Run an ANOVA test
+
+# Single factor: SITE (location)
+# Number of levels: 5 (IVEE, AQUE, CARP, MOHK, NAPL)
+# Random variable: SIZE (mm)
+
+# Is there a significant difference in mean lobster size (mm) for sites IVEE, AQUE, CARP, MOHK, NAPL? 
+
+# HO: mean lobster sizes across all sites are equal
+# HA: At least two means differ significantly 
+
+lobster_aov <- lobster_abundance_tidy %>% 
+  filter(YEAR == "2017") %>%
+  aov(SIZE ~ SITE, data = .)
+
+summary(lobster_aov)
+
+# post-hoc testing using Tukey's HSD
+
+lobster_ph <- TukeyHSD(lobster_aov)
+
+lobster_ph
+```
+
+To assess the differences in lobster sizes at each of the five locations in the Santa Barbara County area, an average of the measured carapace length (in mm), which is defined as the rear of the eye socket to the rear of the carapace on a line parallel to the center line of the body shell (7), was taken for each lobster sample in 2017. A significant difference was found in mean carapace length of lobster samples taken at Naples Reef and Isla Vista as well as Naples Reef and Carpinteria in 2017, according to a one way ANOVA test (F(4, 1663) = 3.4, p < 0.01, $\alpha$ = .05, with post-hoc analysis by Tukey's HSD, *p* < 0.01, $\alpha = 0.05$. n = 67 (AQUE), n = 705 (CARP), n = 606 (IVEE), n = 178 (MOHK), n = 112 (NAPL). However, the rest of the locations saw no significant difference in mean carapace length of observed samples.
+
+It is notable that a significant difference was found in average lobster sizes between two of the marine protected areas (Naples Reef and Isla Vista). The reason for this difference could be caused by a multitude of external environmental factors, such as urban development in Isla Vista, and is not necessarily an indictment of the effectiveness of marine protection in Isla Vista in comparison to Naples Reef. Further research on why Isla Vista’s average lobster size is smaller in comparison to Naples Reef and the other locations is needed. 
+
+
+
+
+
+
+###Average Lobster Size between 2012 and 2017 at MPA and non-MPA Sites (3)
+
+```{r, include = FALSE}
+
+# 3. At Isla Vista and Naples Reef, the two protected MPA sites (with zero fishing pressure), how do lobster sizes in 2012 and 2017 compare? At the non-MPA sites?
+# Run 5 two-sample t-tests for each location, with samples being 2012 and 2017
+
+# First, look at data and see if its normal
+
+size_hist_2012 <- lobster_abundance_tidy %>% 
+  filter( YEAR == "2012") %>% 
+  ggplot(aes(x = SIZE)) +
+  geom_histogram() +
+  facet_wrap(~ SITE) 
+
+size_hist_2012
+
+size_hist_2017 <- lobster_abundance_tidy %>% 
+  filter(YEAR == "2017") %>% 
+  ggplot(aes(x = SIZE)) +
+  geom_histogram() +
+  facet_wrap(~ SITE)
+
+size_hist_2017
+
+
+size_qq_2012 <-lobster_abundance_tidy %>% 
+  filter( YEAR == "2012") %>% 
+  ggplot(aes(sample = SIZE)) +
+  geom_qq() +
+  facet_wrap(~ SITE)
+
+size_qq_2012
+
+size_qq_2017 <-lobster_abundance_tidy %>% 
+  filter( YEAR == "2017") %>% 
+  ggplot(aes(sample = SIZE)) +
+  geom_qq() +
+  facet_wrap(~ SITE)
+
+size_qq_2017
+
+size_summary <- lobster_abundance_tidy %>% 
+  group_by(SITE, YEAR) %>% 
+  filter(YEAR == "2012" | YEAR == "2017") %>% 
+  summarize(
+    sample_size = length(SIZE)
+  )
+
+size_summary
+
+# Based on the histograms and qq-plots, the size data for the sites are approximately normal, except for Naples 2012, which only has 5 samples. We can use t-tests for these samples because the t-distribution allows for some uncertainty. 
+
+
+```
+
+```{r, include = FALSE}
+
+# 3. At Isla Vista and Naples Reef, the two protected MPA sites (with zero fishing pressure), how do lobster sizes in 2012 and 2017 compare? At the non-MPA sites?
+# Run 5 two-sample t-tests for each location, with samples being 2012 and 2017
+
+# Second, do F-tests for equal variance for each site to determine if we will use a Welch's t-test or Student's t-test 
+
+# F-test for equal variances
+# Null: The variances are equal (ratio of variances = 1)
+# Alternative: The variances aren't equal (ratio of variances NOT = 1)
+
+f_test_arroyo <- lobster_abundance_tidy %>% 
+  filter(YEAR == "2012" | YEAR == "2017", SITE == "AQUE") %>% 
+  var.test(SIZE ~ YEAR, data = .)
+
+f_test_arroyo
+
+# Based on the F-test, for Arroyo, we fail to reject the null that the variances for the 2012 and 2017 samples are equal (p = 0.298). Use a student's t-test.
+
+f_test_carp <- lobster_abundance_tidy %>% 
+  filter(YEAR == "2012" | YEAR == "2017", SITE == "CARP") %>% 
+  var.test(SIZE ~ YEAR, data = .)
+
+f_test_carp
+
+# Based on the F-test, for Carpinteria, we fail to reject the null that the variances for the 2012 and 2017 samples are equal (p = 0.204). Use student's t-test.
+
+f_test_ivee <- lobster_abundance_tidy %>% 
+  filter(YEAR == "2012" | YEAR == "2017", SITE == "IVEE") %>% 
+  var.test(SIZE ~ YEAR, data = .)
+
+f_test_ivee
+
+# Based on the F-test, for Isla Vista, we fail to reject the null that the variances for the 2012 and 2017 samples are equal (p = 0.307). Use student's t-test.
+
+f_test_mohk <- lobster_abundance_tidy %>% 
+  filter(YEAR == "2012" | YEAR == "2017", SITE == "MOHK") %>% 
+  var.test(SIZE ~ YEAR, data = .)
+
+f_test_mohk
+
+# Based on the F-test, for Mohawk Reef, we fail to reject the null that the variances for the 2012 and 2017 samples are equal (p = 0.151). Use student's t-test.
+
+f_test_napl <- lobster_abundance_tidy %>% 
+  filter(YEAR == "2012" | YEAR == "2017", SITE == "NAPL") %>% 
+  var.test(SIZE ~ YEAR, data = .)
+
+f_test_napl
+
+# Based on the F-test, for Naples Reef, we fail to reject the null that the variances for the 2012 and 2017 samples are equal (p = 0.768). Use student's t-test.
+
+
+```
+
+```{r, include = FALSE}
+
+# 3. At Isla Vista and Naples Reef, the two protected MPA sites (with zero fishing pressure), how do lobster sizes in 2012 and 2017 compare? At the non-MPA sites?
+# Run 5 two-sample t-tests for each location, with samples being 2012 and 2017
+
+# Third, run 5 student's t-tests for 2012 and 2017 lobster sizes at each location:
+
+# Null: There is no significant difference in sizes for 2012 and 2017 lobster samples
+# Alternative: There is a significant difference in sizes for 2012 and 2017 lobster samples
+
+# Fourth, run Cohen's D to determine effect sizes
+
+
+
+arroyo_ttest <- lobster_abundance_tidy %>% 
+  filter(YEAR == "2012" | YEAR == "2017", SITE == "AQUE") %>% 
+  t.test(SIZE ~ YEAR, var.equal = TRUE, data = .)
+
+arroyo_ttest
+
+# Based on the student's t-test, there is no significant difference in mean sizes for lobster samples collected in 2012 and 2017 at Arroyo Quemado (p = 0.209, `r round(arroyo_ttest$p.value,3)).
+
+arroyo_eff_size <- lobster_abundance_tidy %>% 
+  filter(YEAR == "2012" | YEAR == "2017", SITE == "AQUE") %>% 
+  cohen.d(SIZE ~ YEAR, data = .)
+
+arroyo_eff_size
+
+# Small Cohen's D (-0.256, `r round(arroyo_eff_size$estimate,2)`)
+
+
+
+carp_ttest <- lobster_abundance_tidy %>% 
+  filter(YEAR == "2012" | YEAR == "2017", SITE == "CARP") %>% 
+  t.test(SIZE ~ YEAR, var.equal = TRUE, data = .)
+
+carp_ttest
+
+# Based on the student's t-test, there is no significant difference in mean sizes for lobster samples collected in 2012 and 2017 at Carpinteria (p = 0.182, `r round(carp_ttest$p.value,3)).
+
+carp_eff_size <- lobster_abundance_tidy %>% 
+  filter(YEAR == "2012" | YEAR == "2017", SITE == "CARP") %>% 
+  cohen.d(SIZE ~ YEAR, data = .)
+
+carp_eff_size
+
+# Cohen's D is negligible. 
+
+
+
+ivee_ttest <- lobster_abundance_tidy %>% 
+  filter(YEAR == "2012" | YEAR == "2017", SITE == "IVEE") %>% 
+  t.test(SIZE ~ YEAR, var.equal = TRUE, data = .)
+
+ivee_ttest
+
+# Based on the student's t-test, there is no significant difference in mean sizes for lobster samples collected in 2012 and 2017 at Isla Vista (p = 0.059, `r round(ivee_ttest$p.value,3)).
+
+ivee_eff_size <- lobster_abundance_tidy %>% 
+  filter(YEAR == "2012" | YEAR == "2017", SITE == "IVEE") %>% 
+  cohen.d(SIZE ~ YEAR, data = .)
+
+ivee_eff_size
+
+# Small COhen's D (-0.377, `r round(ivee_eff_size$estimate,2)`)
+
+
+
+mohk_ttest <- lobster_abundance_tidy %>% 
+  filter(YEAR == "2012" | YEAR == "2017", SITE == "MOHK") %>% 
+  t.test(SIZE ~ YEAR, var.equal = TRUE, data = .)
+
+mohk_ttest
+
+# Based on the student's t-test, there IS a significant difference in mean sizes for lobster samples collected in 2012 and 2017 at Mohawk Reef (p < 0.05).
+
+mohk_table_2012 <- lobster_abundance_tidy %>% 
+  filter(YEAR == "2012", SITE == "MOHK") %>% 
+  group_by(SITE, YEAR) %>% 
+  summarize(
+    mean = mean(SIZE),
+    sd = sd(SIZE)
+  )
+
+mohk_table_2012
+
+mohk_table_2017 <- lobster_abundance_tidy %>% 
+  filter(YEAR == "2017", SITE == "MOHK") %>% 
+  group_by(SITE, YEAR) %>% 
+  summarize(
+    mean = mean(SIZE),
+    sd = sd(SIZE)
+  )
+
+mohk_table_2017
+
+
+
+mohk_eff_size <- lobster_abundance_tidy %>% 
+  filter(YEAR == "2012" | YEAR == "2017", SITE == "MOHK") %>% 
+  cohen.d(SIZE ~ YEAR, data = .)
+
+mohk_eff_size
+
+# Medium Cohen's D (0.54, `r round(mohk_eff_size$estimate,2)`)
+
+
+
+napl_ttest <- lobster_abundance_tidy %>% 
+  filter(YEAR == "2012" | YEAR == "2017", SITE == "NAPL") %>% 
+  t.test(SIZE ~ YEAR, var.equal = TRUE, data = .)
+
+napl_ttest
+
+
+# Based on the student's t-test, there is no significant difference in mean sizes for lobster samples collected in 2012 and 2017 at Naples (p = 0.500, `r round(napl_ttest$p.value,3)).
+
+napl_eff_size <- lobster_abundance_tidy %>% 
+  filter(YEAR == "2012" | YEAR == "2017", SITE == "NAPL") %>% 
+  cohen.d(SIZE ~ YEAR, data = .)
+
+napl_eff_size
+
+# Small effect size, Cohen's D = (-0.283, `r round(napl_eff_size$estimate,2)`)
+
+# Difference in means = (`r diff(napl_ttest$estimate)`)
+
+```
+
+
+California spiny lobster sizes were measured by divers at marine protected areas (Isla Vista and Naples Reef) and non-marine protected areas (Arroyo Quemado, Carpinteria, and Mohawk Reef) in 2012 and 2017. Of the five locations, only lobsters at Mohawk Reef exhibited a significant change in mean size between 2012 (`r round(mohk_table_2012$mean,2)` ± `r round(mohk_table_2012$sd,2)` mm) and 2017 (`r round(mohk_table_2017$mean,2)` ± `r round(mohk_table_2017$sd,2)` mm), based on results from a two-sample Student's t-test [t(`r round(mohk_ttest$parameter,2)`) = `r round(mohk_ttest$statistic,2)`, *p* < 0.05, $\alpha$ = 0.05]. In addition, the effect size is moderate (Cohen's d = `r round(mohk_eff_size$estimate,2)`).
+
+
+
+###Association between Site and Legal Lobster Carapace Length (4)
+
+
+```{r, include = FALSE}
+# 4
+
+# create a df of lobster sizes above and below 83 mm at each site; size = "legal" or "not leagal"
+
+lobster_legal <- lobster_abundance_tidy %>% 
+  mutate(size=ifelse(SIZE <= 82.6, "Not Legal", "Legal")) %>% 
+  filter(YEAR == "2017")
+
+lobster_legal
+
+# create a table for legal and illegal lobster sizes 
+
+lobster_legal_tbl <- lobster_legal %>%
+  count(SITE, size) %>% 
+  spread(size, n) %>% 
+  select(-SITE)
+
+rownames(lobster_legal_tbl) <- c("Arroyo Quemado", "Carpenteria", "Isla Vista", "Mohawk Reef", "Naples Reef")
+
+lobster_legal_tbl
+
+
+# convert counts to proportions from lobster_legal_tbl
+
+lobster_prop <- prop.table(as.matrix(lobster_legal_tbl), 1)
+
+lobster_prop
+
+# run a chi-sq test
+
+# We ask: "Is there a significant association between site and legal lobster carapace length (mm)?"
+
+lobster_x2 <- chisq.test(lobster_legal_tbl)
+
+lobster_x2
+
+# GOT IT - Jess
+```
+
+The legal minimum for lobster carapace length is 82.6 mm. The counts of legal and non-legal lobsters sizes were observed at each of the five LTER locations and recorded. The counts were converted into proportions of legal vs non-legal sizes at each of the five locations and a Pearson’s chi-squared test for association was run on the proportions to determine if an association between the relative proportion of legal sized lobsters vs non-legal sized lobsters and location was present. After running the test an association between location and legal-sized lobsters was found, $\chi^2$ = 18.497 $\chi^2$(df) = 4, *p* < 0.001
+In the observed proportions of legal vs non-legal lobsters, three of the five locations (Arroyo Quemado, Carpinteria, and Isla Vista) had similar percentages of legal vs non-legal sized lobsters at approximately 24%, 25%, and 21%, respectively. Mohawk Reef had the smallest percentage of legal-sized lobsters at approximately 13% and Naples Reef had the largest percentage at approximately 33%. 
+
+These percentages complement the average carapace length observed at each of the five locations as well.
+The average carapace length at Naples Reef was the largest of the five locations at 76.23 mm. This number supports the finding of Naples Reef having the largest percentage of legal-sized lobsters at approximately 33%.  The average carapace length at Isla Vista was observed to be 71.45 mm, which was the smallest of the five locations. However, Isla Vista had the the second smallest percentage of legal-sized lobsters at 21% behind Mohawk Reef at 13%. This discrepancy is most likely due to the significant difference in sample size at the two locations. Isla Vista’s sample size was 606 lobsters observed and Mohawk Reef’s sample size was 178 lobsters observed in 2017. 
+
+##Conclusion
+
+California spiny lobsters (Panulirus interruptus) are essential to the sustainability of the California coast marine ecosystem. The lobsters reduce pressure on kelp forests by consuming herbivorous sea urchins,  ensuring kelp growth and allowing other marine life to thrive in this ecosystem. A valuable resource for the California state economy as well, the lobsters contribute to the vitality of nearby fisheries. This report aims to analyze the effectiveness of marine protected areas (MPAs) in sustaining California spiny lobster populations by comparing data on lobster abundance, carapace length (mm), and fishing pressure at Arroyo Quemado, Carpinteria, Mohawk Reef, Isla Vista, and Naples Reef. The following statements summarize the main findings of the report:
+
+(1) California spiny lobsters observed at the marine protected area of Naples Reef had the largest average carapace length (mm) measured of the five locations in 2017. 
+
+(2) The average carapace length (mm) of California spiny lobsters observed in 2017 differed significantly at the marine protected area of Naples Reef and Isla Vista as well as Naples Reef and Carpinteria. All other locations saw no significant difference in average carapace length (mm).
+
+(3) California spiny lobster sizes were measured by divers at marine protected areas (Isla Vista and Naples Reef) and non-marine protected areas (Arroyo Quemado, Carpinteria, and Mohawk Reef) in 2012 and 2017. Of the five locations, only lobsters at Mohawk Reef exhibited a significant change in mean size between 2012 and 2017. 
+
+(4) There is an association between location and the proportion of legal-sized (>=82.6 mm) California spiny lobster carapace length (mm) and below legal-sized (<82.6 mm) California spiny lobster carapace length (mm). 
+
+The collection of data on lobster abundance, lobster carapace length (mm), and fishing pressure at each of the five locations observed should continue in the future to better determine the effectiveness of MPAs on population health at each site. Based on the data collected, Naples Reef has the largest average lobster size in 2017 of samples collected at each site, which is a positive sign for the effectiveness of the marine protected area designation. However, the other marine protected area off Isla Vista had the smallest average lobster size in 2017. These contradictory findings should be further explored in future studies. The marine ecosystem of the Santa Barbara Channel will continue to change in the coming decades due to the pressures of climate change, which will bring warmer ocean temperatures and new marine life migration patterns to the region. Data collection of the California spiny lobster at each of the SBC LTER long term kelp forest study sites will be vital as new pressures will present themselves. Monitoring the lobster populations in the coming years will provide more evidence to introduce new and maintain existing MPAs.
+
+##References
